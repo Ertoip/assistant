@@ -1,6 +1,6 @@
 from flask import url_for, Flask, request, render_template
 import openai
-openai.api_key = "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"
+openai.api_key = ""
 responses = []
 messages = [{"role": "system", "content": "You are al, an ai that has access to a collection of tools"}]
 

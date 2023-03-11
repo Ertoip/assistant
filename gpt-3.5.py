@@ -8,8 +8,8 @@ from langchain import OpenAI, LLMMathChain
 from langchain.utilities import PythonREPL
 
 #init keys
-openai.api_key = "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"
-os.environ["OPENAI_API_KEY"] = "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"
+openai.api_key = ""
+os.environ["OPENAI_API_KEY"] = ""
 
 mic = False
 audio = False
