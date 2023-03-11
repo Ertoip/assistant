@@ -1,0 +1,29 @@
+h1{
+    display:flex;
+    justify-content:center;
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+p{
+    display:flex;
+    justify-content:center;
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size:1em;
+}
+.send{
+    flex:1;    
+    justify-content:space-evenly;
+    padding:0.8em;
+    font-size:1em;
+}
+.chatbox{
+    flex:20;
+    justify-content:space-evenly;
+    padding:0.8em;
+    font-size:1em;
+}
+.formChat{
+    display:flex;
+    width:75%;
+    gap: 1%;
+    margin:auto;
+}
