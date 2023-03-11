@@ -1,7 +1,7 @@
 from flask import url_for, Flask, request, render_template
 import openai
-openai.api_key = "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"
-
+openai.api_key = "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"
+responses = []
 messages = [{"role": "system", "content": "You are al, an ai that has access to a collection of tools"}]
 
 app = Flask(__name__)
@@ -10,6 +10,7 @@ app = Flask(__name__)
 @app.route('/<user>', methods=["GET", "POST"])
 def home(user=None):
     response=""
+
     
     if(request.method == "POST"):
         ms = request.form["chat"]
@@ -19,6 +20,8 @@ def home(user=None):
             messages=messages,
             temperature=0.8,
         )
-        response = completion.choices[0].message.content
+        responses.append({"role":"user","content":ms})
+
+        responses.append({"role":completion.choices[0].message.role,"content":completion.choices[0].message.content})
         
-    return render_template('hello.html', user=user, response=response)
+    return render_template('hello.html', user=user, responses=responses, len = len(responses))
