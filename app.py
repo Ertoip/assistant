@@ -9,10 +9,11 @@ from speech_recognition import Recognizer, Microphone
 from langchain import OpenAI, LLMMathChain
 from langchain.utilities import PythonREPL
 import openai
+from hidden import keys
 
 #init keys
-os.environ["OPENAI_API_KEY"] = ""
-openai.api_key = ""
+os.environ["OPENAI_API_KEY"] = keys.openai
+openai.api_key = keys.openai
 
 #mic and audio settings
 mic = False
@@ -73,12 +74,19 @@ def readfile(filename: str=None) -> str:
         f.close()
         return f'In the file was written this: {content}'
 
+def remember(*args):
+    f = open("mem.txt", "r")
+    mem = f.read()
+
+    f.close()
+    return "You remember that "+mem
+
 tools = [
     tool("time", time, "useful when you need to know the current time"),
     tool("math", math, "useful when you need to solve calculations of any type it require only one argument wich is the mathematical operation written with math symbols. multiply 2 by 2 should become 2*2"),
-    tool("search", wikiSearch, "Useful for when you have to answer questions about historic, literary and artistic facts"),
-    tool("read", readfile, "Allows you to read the content of a file given the filename"),
-    tool("write", writefile, "Allows you to write text or code into a file given the filename and the content of the file as params, for example if i say write a code in file.py you should write the code in that file"),
+    #tool("read", readfile, "Allows you to read the content of a file given the filename"),
+    #tool("write", writefile, "Allows you to write text or code into a file given the filename and the content of the file as params, for example if i say write a code in file.py you should write the code in that file"),
+    tool("memory", remember, "This tool allows you to read yor memory to know about facts and events that have happened, use this when you are asked questions about the past")
 ]
 
 def execute(fun, arg):
@@ -93,8 +101,6 @@ toolsText = ""
 
 for i in tools:
     toolsText += i.name+": "+i.description+"\n"
-
-print(toolsText)
 
 #init models
 
@@ -112,7 +118,10 @@ splitter = [{
     I need to know the time singapore,I need to know the temperature in singapore,I need to make a table with the time and the temperature of singapore
     
     What time is it?
-    I need to know the current time"""}]
+    I need to know the current time
+    
+    che giorno è oggi?
+    Devo sapere la data di oggi"""}]
 
 classifier = [{
     "role":"system",
@@ -142,7 +151,7 @@ messages = [{"role": "system",
             the conversation and the personality that has been assigned to you.
             If the response is 'No tool found' ignore the response part and respond to the user normally.
             This a description of your personality:
-            You dont have anything special respond like chat gpt"""}] 
+            Your name is mario you speak only italian and you love pasta pizza and mandolino"""}] 
 
 ms = ''
 responses = []
@@ -154,6 +163,7 @@ app = Flask(__name__)
 def home(user=None):
     #input methods
     if(request.method == "POST"):
+        print("start")
         if(mic):
             with Microphone() as source:
                 print("Ascolto...")
@@ -162,7 +172,7 @@ def home(user=None):
                 print(ms)
                     
         ms = request.form["chat"]
-
+        print("chat")
         splitter.append({"role":"user", "content":"Sentence:"+ms})
         completion = openai.ChatCompletion.create(
             model="gpt-3.5-turbo", 
@@ -178,6 +188,7 @@ def home(user=None):
             
         #for every action sentence execute a tool
         for sentence in sentences:
+            #explain to the model the result and the sentence to think about
             classifier.append({"role":"user", "content":res+"Sentence:"+sentence})
             
             completion = openai.ChatCompletion.create(
@@ -189,8 +200,6 @@ def home(user=None):
             print("Thought: "+completion.choices[0].message.content)
             
             args = completion.choices[0].message.content.split(',')
-            
-
             
             try:
                 args[0]=args[0].lower().replace("tool:", "")
@@ -208,8 +217,7 @@ def home(user=None):
             try:
                 res = "Result:"+execute(args[0], args[1])+","
             except:
-                print("not found")
-            print(res)
+                res = "Not found"
         
         messages.append({"role":"user", "content":"Sentence:"+ms+"\n"+res})
         print("Sentence:"+ms+"\n"+res)
@@ -218,7 +226,7 @@ def home(user=None):
             messages=messages,
             temperature=1,
         )
-    
+        
         responses.append({"role":"user","content":ms})
 
         responses.append({"role":completion.choices[0].message.role,"content":completion.choices[0].message.content})
