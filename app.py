@@ -24,71 +24,6 @@ llm = OpenAI(temperature=0)
 llm_math = LLMMathChain(llm=llm, verbose=True)
 python_repl = PythonREPL()
 
-#init speech and voice recognition
-engine = init()
-voices = engine.getProperty("voices")
-engine.setProperty("voice", voices[36].id)#16 #36
-r = Recognizer()
-
-#init tools for ai
-class tool:
-    def __init__(self, name, function, description):
-        self.name = name
-        self.function = function
-        self.description = description
-        
-def time(*args):
-    now = datetime.datetime.now()
-    time = now.time()
-    return str(time)[:str(time).find(".")]
-
-def math(arg):
-    return llm_math.run(arg[0])
-
-def wikiSearch(arg):
-    search = wikipedia.search(arg[0], results = 1)
-    return wikipedia.summary(search[0])
-
-def pythonRepl(arg):
-    return python_repl.run(arg[0])
-
-def writefile(filename: str=None) -> str:
-    title = filename[0]
-    content = ",".join(filename[1:])
-    f = open(title , "w")
-    
-    c = f.write(str(content))
-    
-    if c:
-        f.close()
-        return f'File was written'
-    
-def readfile(filename: str=None) -> str:
-    try:
-        f = open(filename[0], "r")
-    except:
-        return "File not found"
-    content = f.read()
-    
-    if content:
-        f.close()
-        return f'In the file was written this: {content}'
-
-def remember(*args):
-    f = open("mem.txt", "r")
-    mem = f.read()
-
-    f.close()
-    return "You remember that "+mem
-
-tools = [
-    tool("time", time, "useful when you need to know the current time"),
-    tool("math", math, "useful when you need to solve calculations of any type it require only one argument wich is the mathematical operation written with math symbols. multiply 2 by 2 should become 2*2"),
-    #tool("read", readfile, "Allows you to read the content of a file given the filename"),
-    #tool("write", writefile, "Allows you to write text or code into a file given the filename and the content of the file as params, for example if i say write a code in file.py you should write the code in that file"),
-    tool("memory", remember, "This tool allows you to read yor memory to know about facts and events that have happened, use this when you are asked questions about the past")
-]
-
 def execute(fun, arg):
     for i in tools:
         if i.name.lower() == fun.lower() and i.name.lower() != "none":
@@ -123,28 +58,6 @@ splitter = [{
     che giorno è oggi?
     Devo sapere la data di oggi"""}]
 
-classifier = [{
-    "role":"system",
-    "content":"""Your job is understanding from the parameter 'Sentence' if among the tools you
-            have at your disposal there is one that can be useful for executing the task requested in 
-            the sentence and if there is a request in the first place, 
-            you should only respond in this format and nothing more:
-            tool:name of the tool, params: params that must be passed split them with this ,,
-            this is an example of your job:
-            
-            I need to know the age of obama.
-            tool:search,params:age of obama
-            
-            Response:61, I need to multiply the result by 4
-            tool:math,params:61*4
-            
-            If the tool search does not appear in the list you or if you've finished you should instead say:
-            tool:None,params:None
-            
-            List of tools:
-            """+toolsText
-}]
-
 messages = [{"role": "system",  
             "content": """You are the final part of system that from a starting sentence executes a function and answers with the
             result of that function. Your job is to generate a response from the starting sentence and the result that fits 
@@ -164,12 +77,6 @@ def home(user=None):
     #input methods
     if(request.method == "POST"):
         print("start")
-        if(mic):
-            with Microphone() as source:
-                print("Ascolto...")
-                a = r.listen(source, timeout=10, phrase_time_limit=5,)
-                ms = r.recognize_google(a, language="it-IT", show_all=False)#en-US it-IT
-                print(ms)
                     
         ms = request.form["chat"]
         print("chat")
