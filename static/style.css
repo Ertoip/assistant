@@ -39,6 +39,8 @@ p{
     overflow-y:scroll;
     height: 48em;
     bottom: 5em;
+    width:95%;
+    margin:auto;
 }
 
 .chat .assistant{
